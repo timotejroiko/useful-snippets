@@ -10,7 +10,7 @@ Discord.Structures.extend("Message", M => class Message extends M {
 			options = content;
 		}
 		let sent;
-		let previous = client.responses.get(this.id);
+		let previous = this.client.responses.get(this.id);
 		if(previous) {
 			// use the forge method if using discord.js-light else fallback to fetching for regular discord.js
 			let msg = typeof this.channel.messages.forge === "function" ? this.channel.messages.forge(previous.id) : await this.channel.messages.fetch(previous.id,false);
@@ -26,7 +26,7 @@ Discord.Structures.extend("Message", M => class Message extends M {
 		} else {
 			sent = await this.channel.send(options);
 		}
-		client.responses.set(this.id,{
+		this.client.responses.set(this.id,{
 			id:sent.id,
 			attachments:Boolean(sent.attachments.size),
 			embeds:Boolean(sent.embeds.length),
