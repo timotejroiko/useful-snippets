@@ -1,7 +1,7 @@
-const { Structures, Client, Collection } = require("discord.js");
+const { Structures, Client, Collection } = require("discord.js"); // or discord.js-light
 
 // extend the Message class to check for previous responses
-Discord.Structures.extend("Message", M => class Message extends M {
+Structures.extend("Message", M => class Message extends M {
 	async send(content,options) {
 		if(typeof content === "string") {
 			if(!options) { options = {}; }
@@ -40,7 +40,7 @@ Discord.Structures.extend("Message", M => class Message extends M {
 const client = new Client();
 
 // add a collection to hold responses
-client.responses = new Discord.Collection();
+client.responses = new Collection();
 
 client.on("message", message => {
 	message.send("bla");
