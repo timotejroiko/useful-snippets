@@ -42,10 +42,23 @@ const client = new Client();
 // add a collection to hold responses
 client.responses = new Collection();
 
+// add event listeners
 client.on("message", message => {
-	message.send("bla");
+	if(message.content.startsWith("!ping")) {
+		message.send("pong");
+	}
+});
+client.on("messageUpdate", (oldMessage, newMessage) => {
+	if(newMessage.content.startsWith("!ping")) {
+		newMessage.send("pong");
+	}
 });
 
-client.on("messageUpdate", (oldMessage, newMessage) => {
-	newMessage.send("bla");
-});
+// alternatively create a message handler
+function handler(message) {
+	if(message.content.startsWith("!ping")) {
+		message.send("pong");
+	}
+}
+client.on("message",(newM) => handler(newM))
+client.on("messageUpdate",(oldM,newM) => handler(newM))
