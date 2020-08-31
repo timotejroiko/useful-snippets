@@ -1,6 +1,6 @@
 const { Structures, Client, Collection } = require("discord.js"); // or discord.js-light
 
-// extend the Message class to check for previous responses
+// extend the Message class and add a new message.send() method that automatically checks for the existence of previous responses
 Structures.extend("Message", M => class Message extends M {
 	async send(content,options) {
 		if(typeof content === "string") {
