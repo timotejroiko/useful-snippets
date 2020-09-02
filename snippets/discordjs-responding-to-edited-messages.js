@@ -49,6 +49,9 @@ client.on("message", message => {
 	}
 });
 client.on("messageUpdate", (oldMessage, newMessage) => {
+	// messageUpdates are sometimes sent multiple times for the same message, for example one update containing an embed, another contianing the content, etc
+	// if the message doesnt have an author field, it meants its one of these partial updates, so you can safely ignore it
+	if(!newMessage.author) return;
 	if(newMessage.content.startsWith("!ping")) {
 		newMessage.send("pong");
 	}
@@ -56,6 +59,7 @@ client.on("messageUpdate", (oldMessage, newMessage) => {
 
 // alternatively create a message handler
 function handler(message) {
+	if(!newMessage.author) return;
 	if(message.content.startsWith("!ping")) {
 		message.send("pong");
 	}
