@@ -3,80 +3,108 @@
 const { inspect } = require("util");
 
 // a layered eval function that supports async/await syntax, promise previewing, variables, comment, returns and other complex code
-async function ev(f, sym) {
+async function ev(f) {
 	try {
-		let _ = eval(`(()=>{
+		const result = eval(`(()=>{
 			return ${f}
 		})()`);
-		if(_ instanceof Promise) {
-			_ = { [sym]: await _ };
-		}
-		return _;
+		const p = result instanceof Promise;
+		let error = false;
+		return {
+			promise: p,
+			data: p ? await result.catch(e => { error = true; return e; }) : result,
+			error
+		};
 	} catch(e) {
 		// no-op
 	}
 	try {
-		return await eval(`(async()=>{
-			return ${f}
-		})()`);
+		return {
+			data: await eval(`(async()=>{
+				return ${f}
+			})()`)
+		};
 	} catch(e) {
 		// no-op
 	}
 	try {
-		let _ = eval(`(()=>{
+		const result = eval(`(()=>{
 			${f}
 		})()`);
-		if(_ instanceof Promise) {
-			_ = { [sym]: await _ };
-		}
-		return _;
+		const p = result instanceof Promise;
+		let error = false;
+		return {
+			promise: p,
+			data: p ? await result.catch(e => { error = true; return e; }) : result,
+			error
+		};
 	} catch(e) {
 		// no-op
 	}
 	try {
-		return await eval(`(async() => {
-			${f}
-		})()`);
+		return {
+			data: await eval(`(async() => {
+				${f}
+			})()`)
+		};
 	} catch(e) {
-		return e;
+		return {
+			error: true,
+			data: e
+		};
 	}
 }
 
 // returns a string with an optional max string length by reducing inspect depth
-async function evs(f, maxLength = Infinity, thisArg = null, showHidden = false) {
-	const sym = Symbol("Promise");
-	let obj = await ev.call(thisArg, f, sym);
-	let promise;
-	if(obj && typeof obj === "object") {
-		promise = Object.hasOwnProperty.call(obj, sym);
-		if(promise) { obj = obj[sym]; }
-		let inspected;
-		for(let i = 3; i >= 0; i--) {
-			inspected = inspect(obj, {
+async function evs(f, thisArg, maxLength = Infinity, showHidden = false) {
+	const obj = await ev.call(thisArg, f);
+	let inspected = obj.data;
+	if(typeof inspected !== "string") {
+		inspected = inspect(obj.data, {
+			getters: true,
+			showHidden,
+			depth: 3
+		}).replace(/ {2}/g, "\t");
+		if(inspected.length > maxLength) {
+			inspected = inspect(obj.data, {
 				getters: true,
 				showHidden,
-				depth: i
+				depth: 2
 			}).replace(/ {2}/g, "\t");
-			if(inspected.length <= maxLength) { break; }
 		}
 		if(inspected.length > maxLength) {
-			let str = "";
-			const lines = inspected.split("\n");
-			for(let i = 0; i < lines.length; i++) {
-				if((str + lines[i]).length > maxLength - 30) {
-					str += `\n ... and ${lines.length - i} more lines`;
-					break;
-				}
-				str += `${lines[i]}\n`;
-			}
-			inspected = str;
+			inspected = inspect(obj.data, {
+				getters: true,
+				showHidden,
+				depth: 1
+			}).replace(/ {2}/g, "\t");
 		}
-		obj = inspected;
+		if(inspected.length > maxLength) {
+			inspected = inspect(obj.data, {
+				getters: true,
+				showHidden,
+				depth: 0
+			}).replace(/ {2}/g, "\t");
+		}
 	}
-	if(obj.length > maxLength) {
-		obj = `${obj.slice(0, maxLength - 50)}\n ... and ${obj.length - maxLength + 50} more characters`;
+	let str = "";
+	if(obj.promise) { str += "<Promise> "; }
+	if(obj.error) { str += "<Error> "; }
+	const lines = inspected.split("\n");
+	if(lines.length) {
+		for(let i = 0; i < lines.length; i++) {
+			const append = `\n ... and ${lines.length - i} more lines`;
+			if((str + lines[i]).length > maxLength - append.length) {
+				str += append;
+				break;
+			}
+			str += `${lines[i]}\n`;
+		}
+	} else if(str.length > maxLength) {
+		const append = `\n ... and ${str.length - maxLength - 40} more characters`;
+		str = `${str.slice(0, maxLength - 40)}${append}`;
 	}
-	return `${promise ? "<Promise> " : ""}${obj}`;
+	return str;
 }
 
 // export it so you can simply require this file
