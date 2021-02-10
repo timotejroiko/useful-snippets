@@ -100,7 +100,10 @@ async function evs(f, thisArg, maxLength = Infinity, showHidden = false) {
 			}
 			str += `${lines[i]}\n`;
 		}
-	} else if(str.length > maxLength) {
+	} else {
+		str += inspected;
+	}
+	if(str.length > maxLength) {
 		const append = `\n ... and ${str.length - maxLength - 40} more characters`;
 		str = `${str.slice(0, maxLength - 40)}${append}`;
 	}
