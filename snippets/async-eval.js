@@ -94,18 +94,22 @@ async function evs(f, thisArg, maxLength = Infinity, showHidden = false) {
 	if(lines.length) {
 		for(let i = 0; i < lines.length; i++) {
 			const append = `\n ... and ${lines.length - i} more lines`;
-			if((str + lines[i]).length > maxLength - append.length) {
+			let line = lines[i];
+			if(line.length > maxLineLength) {
+				line = `${line.slice(0, maxLineLength - 5)} ...`;
+			}
+			if((str + line).length > maxLength - append.length) {
 				str += append;
 				break;
 			}
-			str += `${lines[i]}\n`;
+			str += `${line}\n`;
 		}
 	} else {
 		str += inspected;
 	}
 	if(str.length > maxLength) {
-		const append = `\n ... and ${str.length - maxLength - 40} more characters`;
-		str = `${str.slice(0, maxLength - 40)}${append}`;
+		const append = `\n ... and ${str.length - maxLength - 35} more chars`;
+		str = `${str.slice(0, maxLength - 35)}${append}`;
 	}
 	return str;
 }
