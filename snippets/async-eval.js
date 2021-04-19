@@ -56,7 +56,7 @@ async function ev(f) {
 }
 
 // returns a string with an optional max string length by reducing inspect depth
-async function evs(f, thisArg, maxLength = Infinity, showHidden = false) {
+async function evs(f, thisArg, maxLength = Infinity, maxLineLength = Infinity, showHidden = false) {
 	const obj = await ev.call(thisArg, f);
 	let inspected = obj.data;
 	if(typeof inspected !== "string") {
