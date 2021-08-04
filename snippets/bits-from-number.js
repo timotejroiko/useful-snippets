@@ -15,11 +15,11 @@ function bitsFromBigint(n, bits, from) {
 	return ((1n << bits) - 1n) & (n >> (from - 1n));
 }
 
-// const countBits = n => Math.ceil(Math.log2(n));
+// const countBits = n => Math.floor(Math.log2(n)) + 1; // cant use ceil
 // const split = n => ((n << (32 - countBits(Math.abs(n)))) >> (32 - countBits(Math.abs(n)))) % N;
 
 module.exports = {
 	bitsFromNumberAuto,
 	bitsFromNumber,
-	bitsFromBigint,
-}
+	bitsFromBigint
+};
